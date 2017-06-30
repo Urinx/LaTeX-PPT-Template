@@ -1,6 +1,6 @@
-# LaTeX PPT Beamer Template
+# LaTeX PPT Template
 
-Seven awesome beamer ppt templates for researchers or students.
+Seven awesome latex ppt templates for researchers or students.
 
 ### Jet Black (曜石黑)
 
