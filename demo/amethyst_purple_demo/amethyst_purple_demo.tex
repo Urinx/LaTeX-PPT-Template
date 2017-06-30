@@ -1,0 +1,399 @@
+%!TeX encoding = UTF-8
+%!TeX program = xelatex
+\documentclass[notheorems, aspectratio=54]{beamer}
+% aspectratio: 1610, 149, 54, 43(default), 32
+
+\usepackage{latexsym}
+\usepackage{amsmath,amssymb}
+\usepackage{mathtools}
+\usepackage{color,xcolor}
+\usepackage{graphicx}
+\usepackage{algorithm}
+\usepackage{amsthm}
+\usepackage{lmodern} % 解决 font warning
+% \usepackage[UTF8]{ctex}
+\usepackage{animate} % insert gif
+
+\usepackage{lipsum} % To generate test text 
+\usepackage{ulem} % 下划线，波浪线
+
+\usepackage{listings} % display code on slides; don't forget [fragile] option after \begin{frame}
+
+% ----------------------------------------------
+% tikx
+\usepackage{framed}
+\usepackage{tikz}
+\usepackage{pgf}
+\usetikzlibrary{calc,trees,positioning,arrows,chains,shapes.geometric,%
+    decorations.pathreplacing,decorations.pathmorphing,shapes,%
+    matrix,shapes.symbols}
+\pgfmathsetseed{1} % To have predictable results
+% Define a background layer, in which the parchment shape is drawn
+\pgfdeclarelayer{background}
+\pgfsetlayers{background,main}
+
+\definecolor{AmethystPurple}{HTML}{AEAEDF}
+% define styles for the normal border and the torn border
+\tikzset{
+  normal border/.style={AmethystPurple, decorate, 
+     decoration={random steps, segment length=2.5cm, amplitude=.7mm}},
+  torn border/.style={AmethystPurple, decorate, 
+     decoration={random steps, segment length=.5cm, amplitude=1.7mm}}}
+
+% Macro to draw the shape behind the text, when it fits completly in the
+% page
+\def\parchmentframe#1{
+\tikz{
+  \node[inner sep=1.5em] (A) {#1};  % Draw the text of the node
+  \begin{pgfonlayer}{background}  % Draw the shape behind
+  \fill[normal border] 
+        (A.south east) -- (A.south west) -- 
+        (A.north west) -- (A.north east) -- cycle;
+  \end{pgfonlayer}}}
+
+% Macro to draw the shape, when the text will continue in next page
+\def\parchmentframetop#1{
+\tikz{
+  \node[inner sep=2em] (A) {#1};    % Draw the text of the node
+  \begin{pgfonlayer}{background}    
+  \fill[normal border]              % Draw the ``complete shape'' behind
+        (A.south east) -- (A.south west) -- 
+        (A.north west) -- (A.north east) -- cycle;
+  \fill[torn border]                % Add the torn lower border
+        ($(A.south east)-(0,.2)$) -- ($(A.south west)-(0,.2)$) -- 
+        ($(A.south west)+(0,.2)$) -- ($(A.south east)+(0,.2)$) -- cycle;
+  \end{pgfonlayer}}}
+
+% Macro to draw the shape, when the text continues from previous page
+\def\parchmentframebottom#1{
+\tikz{
+  \node[inner sep=2em] (A) {#1};   % Draw the text of the node
+  \begin{pgfonlayer}{background}   
+  \fill[normal border]             % Draw the ``complete shape'' behind
+        (A.south east) -- (A.south west) -- 
+        (A.north west) -- (A.north east) -- cycle;
+  \fill[torn border]               % Add the torn upper border
+        ($(A.north east)-(0,.2)$) -- ($(A.north west)-(0,.2)$) -- 
+        ($(A.north west)+(0,.2)$) -- ($(A.north east)+(0,.2)$) -- cycle;
+  \end{pgfonlayer}}}
+
+% Macro to draw the shape, when both the text continues from previous page
+% and it will continue in next page
+\def\parchmentframemiddle#1{
+\tikz{
+  \node[inner sep=2em] (A) {#1};   % Draw the text of the node
+  \begin{pgfonlayer}{background}   
+  \fill[normal border]             % Draw the ``complete shape'' behind
+        (A.south east) -- (A.south west) -- 
+        (A.north west) -- (A.north east) -- cycle;
+  \fill[torn border]               % Add the torn lower border
+        ($(A.south east)-(0,.2)$) -- ($(A.south west)-(0,.2)$) -- 
+        ($(A.south west)+(0,.2)$) -- ($(A.south east)+(0,.2)$) -- cycle;
+  \fill[torn border]               % Add the torn upper border
+        ($(A.north east)-(0,.2)$) -- ($(A.north west)-(0,.2)$) -- 
+        ($(A.north west)+(0,.2)$) -- ($(A.north east)+(0,.2)$) -- cycle;
+  \end{pgfonlayer}}}
+
+% Define the environment which puts the frame
+% In this case, the environment also accepts an argument with an optional
+% title (which defaults to ``Example'', which is typeset in a box overlaid
+% on the top border
+\newenvironment{parchment}[1][Example]{%
+  \def\FrameCommand{\parchmentframe}%
+  \def\FirstFrameCommand{\parchmentframetop}%
+  \def\LastFrameCommand{\parchmentframebottom}%
+  \def\MidFrameCommand{\parchmentframemiddle}%
+  \vskip\baselineskip
+  \MakeFramed {\FrameRestore}
+  \noindent\tikz\node[inner sep=1ex, draw=black!20,fill=AmethystPurple, 
+          anchor=west, overlay] at (0em, 1em) {\sffamily#1};\par}%
+{\endMakeFramed}
+
+% ----------------------------------------------
+
+\mode<presentation>{
+    \usetheme{Berkeley}
+    % Boadilla CambridgeUS
+    % default Antibes Berlin Copenhagen
+    % Madrid Montpelier Ilmenau Malmoe
+    % Berkeley Singapore Warsaw
+    \usecolortheme{dolphin}
+    % beetle, beaver, orchid, whale, dolphin
+    \useoutertheme{infolines}
+    % infolines miniframes shadow sidebar smoothbars smoothtree split tree
+    \useinnertheme{circles}
+    % circles, rectanges, rounded, inmargin
+}
+% 设置 block 颜色
+\setbeamercolor{block title}{bg=AmethystPurple,fg=white}
+
+\newcommand{\reditem}[1]{\setbeamercolor{item}{fg=red}\item #1}
+
+% 缩放公式大小
+\newcommand*{\Scale}[2][4]{\scalebox{#1}{\ensuremath{#2}}}
+
+% 解决 font warning
+\renewcommand\textbullet{\ensuremath{\bullet}}
+
+% ---------------------------------------------------------------------
+% flow chart
+\tikzset{
+    >=stealth',
+    punktchain/.style={
+        rectangle, 
+        rounded corners, 
+        % fill=black!10,
+        draw=white, very thick,
+        text width=6em,
+        minimum height=2em, 
+        text centered, 
+        on chain
+    },
+    largepunktchain/.style={
+        rectangle,
+        rounded corners,
+        draw=white, very thick,
+        text width=10em,
+        minimum height=2em,
+        on chain
+    },
+    line/.style={draw, thick, <-},
+    element/.style={
+        tape,
+        top color=white,
+        bottom color=blue!50!black!60!,
+        minimum width=6em,
+        draw=blue!40!black!90, very thick,
+        text width=6em, 
+        minimum height=2em, 
+        text centered, 
+        on chain
+    },
+    every join/.style={->, thick,shorten >=1pt},
+    decoration={brace},
+    tuborg/.style={decorate},
+    tubnode/.style={midway, right=2pt},
+    font={\fontsize{10pt}{12}\selectfont},
+}
+% ---------------------------------------------------------------------
+
+% code setting
+\lstset{
+    language=C++,
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{red},
+    breaklines=true,
+    xleftmargin=2em,
+    numbers=left,
+    numberstyle=\color[RGB]{222,155,81},
+    frame=leftline,
+    tabsize=4,
+    breakatwhitespace=false,
+    showspaces=false,               
+    showstringspaces=false,
+    showtabs=false,
+    morekeywords={Str, Num, List},
+}
+
+% ---------------------------------------------------------------------
+
+%% preamble
+\title[Bayesian Statistics Tutorial]{Bayesian Statistics Tutorial}
+% \subtitle{The subtitle}
+\author{Urinx}
+\institute[HUST]{mkk@hust.edu.cn}
+
+% -------------------------------------------------------------
+
+\begin{document}
+
+%% title frame
+\begin{frame}
+    \titlepage
+\end{frame}
+
+%% normal frame
+\section{Bayesian Statistics Tutorial}
+\subsection{}
+\begin{frame}
+    \frametitle{Basics}
+    conditional probabilities:
+    $$
+    p(x|y) \coloneqq \frac{p(x,y)}{p(y)}
+    $$
+    the joint probalility of $x$ and $y$:
+    $$
+    p(x,y)=p(x|y)p(y)=p(y|x)p(x)
+    $$
+
+    \begin{block}{Theorem: Bayes Rule}
+    Denote by X and Y random variables then the following holds
+    $$
+    p(y|x)=\frac{p(x|y)p(y)}{p(x)}
+    $$
+    \end{block}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{An Example}
+
+    \begin{parchment}[Question]
+        Assume that a patient would like to have such a test carried out on him. The physician recommends a test which is guaranteed to detect HIV-positive whenever a patient is infected. On the other hand, for healthy patients it has a $1\%$ error rate. That is, with probability 0.01 it diagnoses a patient as HIV-positive even when he is, HIV-negative. \uwave{Moreover, assume that $0.15\%$ of the population is infected.}
+        \\[2ex]
+        Now the patient has the test carried out and the test returns HIV-negative. In this case, logic implies that he is healthy, since the test has $100\%$ detection rate. In the converse case things are not quite as straightforward.
+        \\[2ex]
+        So what's the $p(X = \mathtt{HIV+}|T = \mathtt{HIV+})$?
+    \end{parchment}
+    
+\end{frame}
+
+\begin{frame}
+    \frametitle{An Example}
+
+    \center{
+    \begin{tabular}{ c | c c }
+        $p(t|x)$ & $X = \mathtt{HIV-}$ & $X=\mathtt{HIV+}$ \\
+        \hline
+        $T=\mathtt{HIV-}$ & 0.99 & 0 \\
+        $T=\mathtt{HIV+}$ & 0.01 & 1
+    \end{tabular}
+    }
+
+    $$
+    p(X = \mathtt{HIV+}) = 0.0015
+    $$
+\end{frame}
+
+\begin{frame}
+    \frametitle{An Example}
+
+    By Bayes rule we may write
+    $$
+    p(X = \mathtt{HIV+}|T=\mathtt{HIV+}) = \frac{p(T=\mathtt{HIV+}|X=\mathtt{HIV+})p(X=\mathtt{HIV+})}{p(T=\mathtt{HIV+})}
+    $$
+
+    While we know all terms in the numerator, $p(T = \mathtt{HIV+})$itself is unknown. That said, it can be computed via
+    \begin{align}
+    \nonumber p(T=\mathtt{HIV+}) &= \sum_{x \in \{\mathtt{HIV+}, \mathtt{HIV-}\}}p(T=\mathtt{HIV+},x) \\
+    \nonumber &= \sum_{x \in \{\mathtt{HIV+}, \mathtt{HIV-}\}}p(T=\mathtt{HIV+}|x)p(x) \\
+    \nonumber &= 1.0 \cdot 0.0015 + 0.01 \cdot 0.9985
+    \end{align}
+
+    Substituting back into the conditional expression yields
+    $$
+    p(X = \mathtt{HIV+}|T=\mathtt{HIV+}) = \frac{1.0 \cdot 0.0015}{1.0 \cdot 0.0015 + 0.01 \cdot 0.9985} = 0.1306
+    $$
+
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{How can we improve the diagnosis}
+
+    % Define block styles
+    \tikzset{
+        grayCircle/.style = {
+            draw,
+            circle,
+            node distance=2.5cm,
+            minimum size=1.5cm,
+            fill=AmethystPurple
+        }
+    }
+
+    \center
+    \begin{tikzpicture}
+        \node[grayCircle] (age) {age};
+        \node[grayCircle, right of=age, style={fill=none}] (x) {x};
+        \node[grayCircle, right of=x, yshift=1.25cm] (t1) {test 1};
+        \node[grayCircle, below of=t1] (t2) {test 2};
+        \draw[->, >=latex] (age) -- (x);
+        \draw[->, >=latex] (x) -- (t1);
+        \draw[->, >=latex] (x) -- (t2);
+    \end{tikzpicture}
+
+    \begin{figure}
+        \caption{A graphical description of our HIV testing scenario. Knowing the age of the patient influences our prior on whether the patient is HIV positive (the random variable X). The outcomes of the tests 1 and 2 are independent of each other given the status X. We observe the shaded random variables (age, test 1, test 2) and would like to infer the un-shaded random variable X.}
+    \end{figure}
+
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{How can we improve the diagnosis}
+
+    \begin{parchment}[Including additional observed random variables]
+    One way is to obtain further information about the patient and to use this in the diagnosis. For instance, information about his age is quite useful. Suppose the patient is 35 years old. In this case we would want to compute $p(X = \mathtt{HIV+}|T = \mathtt{HIV+}, A = 35)$ where the random variable A denotes the age.
+    \end{parchment}
+
+    The corresponding expression yields:
+    $$
+    \frac{p(T=\mathtt{HIV+}|X=\mathtt{HIV+},A)p(X=\mathtt{HIV+}|A)}{p(T=\mathtt{HIV+}|A)}
+    $$
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{How can we improve the diagnosis}
+
+    We may assume that the test is independent of the age of the patient, i.e.
+    $$
+    p(t|x,a) = p(t|x)
+    $$
+
+    What remains therefore is $p(X = \mathtt{HIV+}|A)$. Recent US census data pegs this number at approximately $0.9\%$. 
+    \begin{align}
+    \nonumber & p(X = \mathtt{H+}|T = \mathtt{H+}, A) = \frac{p(T=\mathtt{H+}|X=\mathtt{H+},A)p(X=\mathtt{H+}|A)}{p(T=\mathtt{H+}|A)} \\
+    \nonumber &= \frac{p(T=\mathtt{H+}|X=\mathtt{H+},A)p(X=\mathtt{H+}|A)}{p(T=\mathtt{H+}|X=\mathtt{H+},A)p(X=\mathtt{H+}|A) + p(T=\mathtt{H+}|X=\mathtt{H-},A)p(X=\mathtt{H-}|A)} \\
+    \nonumber & = \frac{p(T=\mathtt{H+}|X=\mathtt{H+})p(X=\mathtt{H+}|A)}{p(T=\mathtt{H+}|X=\mathtt{H+})p(X=\mathtt{H+}|A) + p(T=\mathtt{H+}|X=\mathtt{H-})p(X=\mathtt{H-}|A)} \\
+    \nonumber & = \frac{1 \cdot 0.009}{1 \cdot 0.009 + 0.01 \cdot 0.991} = 0.48
+    \end{align}
+
+\end{frame}
+
+
+\begin{frame}
+    \frametitle{How can we improve the diagnosis}
+
+    \begin{parchment}[Multiple measurements]
+    A second tool in our arsenal is the use of multiple measurements. After the first test the physician is likely to carry out a second test to confirm the diagnosis. We denote by $T_1$ and $T_2$ (and $t_1$,$t_2$ respectively) the two tests. Obviously, what we want is that $T_2$ will give us an "independent" second opinion of the situation.
+    \\[2ex]
+    What we want is that the diagnosis of $T_2$ is independent of that of $T_2$ given the health status X of the patient. This is expressed as
+    $$
+    p(t_1,t_2|x) = p(t_1|x)p(t_2|x)
+    $$
+    which are commonly referred to as \uwave{conditionally independent}.
+
+    \end{parchment}
+\end{frame}
+
+\begin{frame}
+    \frametitle{How can we improve the diagnosis}
+
+    we assume that the statistics for $T_2$ are given by
+    \center{
+    \begin{tabular}{ c | c c }
+        $p(t_2|x)$ & $X = \mathtt{HIV-}$ & $X=\mathtt{HIV+}$ \\
+        \hline
+        $T_2=\mathtt{HIV-}$ & 0.95 & 0.01 \\
+        $T_2=\mathtt{HIV+}$ & 0.05 & 0.99 
+    \end{tabular}
+    }
+
+    \flushleft
+    for $t_1 = t_2 = \mathtt{HIV+}$ we have
+    \begin{align}
+    \nonumber & p(X=\mathtt{H+}|T_1=\mathtt{H+},T_2=\mathtt{H+}) \\
+    \nonumber &= \frac{p(T_1=\mathtt{H+}, T_2=\mathtt{H+}|X=\mathtt{H+})p(X=\mathtt{H+}|A)}{p(T_1=\mathtt{H+}, T_2=\mathtt{H+}|A)} \\
+    \nonumber &= p(T_1=\mathtt{H+}|X=\mathtt{H+})p(T_2=\mathtt{H+}|X=\mathtt{H+})p(X=\mathtt{H+}|A) \;/ \\
+    \nonumber & p(T_1=\mathtt{H+}|X=\mathtt{H+})p(T_2=\mathtt{H+}|X=\mathtt{H+})p(X=\mathtt{H+}|A) \\
+    \nonumber & + p(T_1=\mathtt{H+}|X=\mathtt{H-})p(T_2=\mathtt{H+}|X=\mathtt{H-})p(X=\mathtt{H-}|A) \\
+    % \nonumber & p(T_{1,H+}|X_{H+})p(T_{2,H+}|X_{H+})p(X_{H+}|A) \\
+    % \nonumber & + p(T_{1,H+}|X_{H-})p(T_{2,H+}|X_{H-})p(X_{H-}|A) \\
+    \nonumber &= \frac{1 \cdot 0.99 \cdot 0.009}{1 \cdot 0.99 \cdot 0.009 + 0.01 \cdot 0.05 \cdot 0.991} = 0.95
+    \end{align}
+\end{frame}
+
+
+\end{document}
